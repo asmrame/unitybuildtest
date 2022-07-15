@@ -1,13 +1,6 @@
 name: Publish to itch.io
 
-on:
-  workflow_dispatch: 
-    inputs: 
-      version:
-        description: 'Version for itch.io (does nothing for now)'
-        required: false
-        type: string
-
+on: workflow_dispatch
 env:
   FILE_NAME: UnityBuildTest
   ITCH_USER: 'iofractorg'
