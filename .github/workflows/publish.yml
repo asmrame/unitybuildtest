@@ -1,0 +1,43 @@
+name: Publish to itch.io
+
+on:
+  workflow_dispatch: 
+    inputs: 
+      version:
+        description: 'Version for itch.io'
+        required: false
+        type: string
+
+env:
+  GAME_NAME: UnityBuildTest
+  AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  AWS_DEFAULT_REGION: 'auto'
+
+jobs:
+  publish:
+    name: Publish to itch.io
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - targetPlatform: WebGL
+            channel: html
+          - targetPlatform: StandaloneWindows
+            channel: windows
+          - targetPlatform: StandaloneLinux64
+            channel: linux
+          - targetPlatform: StandaloneOSX
+            channel: osx
+    steps:
+      - name: Download build from Cloudflare R2
+        run: aws s3 cp s3://unitybuiltest/${{ env.GAME_NAME }}-${{ matrix.targetPlatform }}-${{ github.sha }}.zip ${{ env.GAME_NAME }}.zip --endpoint-url https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
+      - name: Butler Push
+        uses: manleydev/butler-publish-itchio-action@v1.0.2
+        env:
+          BUTLER_CREDENTIALS: ${{ secrets.BUTLER_CREDENTIALS }}
+          CHANNEL: ${{ matrix.channel }}
+          ITCH_GAME: unitybuildtest
+          ITCH_USER: iofractorg
+          PACKAGE: ${{ env.GAME_NAME }}.zip
+          VERSION: ${{ inputs.version }}
