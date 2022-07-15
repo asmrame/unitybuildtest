@@ -40,4 +40,4 @@ jobs:
       - name: Download build from Cloudflare R2
         run: aws s3 cp s3://unitybuiltest/${{ env.FILE_NAME }}-${{ matrix.targetPlatform }}-${{ github.sha }}.zip ${{ env.FILE_NAME }}.zip --endpoint-url https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
       - name: Butler Push
-        run: 'butler push ${{ env.FILE_NAME }}.zip ${{ env.ITCH_USER }}/${{ env.ITCH_GAME }}:${{ matrix.channel }}'
+        run: './butler push ${{ env.FILE_NAME }}.zip ${{ env.ITCH_USER }}/${{ env.ITCH_GAME }}:${{ matrix.channel }}'
