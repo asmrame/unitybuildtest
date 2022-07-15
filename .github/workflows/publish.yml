@@ -4,12 +4,15 @@ on:
   workflow_dispatch: 
     inputs: 
       version:
-        description: 'Version for itch.io'
+        description: 'Version for itch.io (does nothing for now)'
         required: false
         type: string
 
 env:
-  GAME_NAME: UnityBuildTest
+  FILE_NAME: UnityBuildTest
+  ITCH_USER: 'iofractorg'
+  ITCH_GAME: 'unitybuildtest'
+  BUTLER_API_KEY: ${{ secrets.BUTLER_CREDENTIALS }}
   AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
   AWS_DEFAULT_REGION: 'auto'
@@ -30,14 +33,13 @@ jobs:
           - targetPlatform: StandaloneOSX
             channel: osx
     steps:
+      - name: Install Butler
+        run: |
+        curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
+        unzip butler.zip
+        cp butler /usr/bin
+        chmod +x /usr/bin/butler
       - name: Download build from Cloudflare R2
-        run: aws s3 cp s3://unitybuiltest/${{ env.GAME_NAME }}-${{ matrix.targetPlatform }}-${{ github.sha }}.zip ${{ env.GAME_NAME }}.zip --endpoint-url https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
+        run: aws s3 cp s3://unitybuiltest/${{ env.GAME_NAME }}-${{ matrix.targetPlatform }}-${{ github.sha }}.zip ${{ env.FILE_NAME }}.zip --endpoint-url https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
       - name: Butler Push
-        uses: manleydev/butler-publish-itchio-action@v1.0.2
-        env:
-          BUTLER_CREDENTIALS: ${{ secrets.BUTLER_CREDENTIALS }}
-          CHANNEL: ${{ matrix.channel }}
-          ITCH_GAME: unitybuildtest
-          ITCH_USER: iofractorg
-          PACKAGE: ${{ env.GAME_NAME }}.zip
-          VERSION: ${{ inputs.version }}
+        run: 'butler push ${{ env.FILE_NAME }}.zip ${{ env.ITCH_USER }}/${{ env.ITCH_GAME }}:${{ matrix.channel }}'
