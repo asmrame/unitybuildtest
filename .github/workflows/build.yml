@@ -2,6 +2,9 @@ name: Build
 
 on: [push, pull_request]
 
+env:
+  GAME_NAME: UnityBuildTest
+
 jobs:
   build:
     name: Build Unity Project
@@ -38,10 +41,27 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           targetPlatform: ${{ matrix.targetPlatform }}
-          buildName: UnityBuildTest
+          buildName: ${{ env.GAME_NAME }}
 
       # Output
-      - uses: actions/upload-artifact@v2
+      - name: Upload to GitHub Pages
+        if: ${{ matrix.targetPlatform == 'WebGL' }}
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          name: ${{ matrix.targetPlatform }}
-          path: build
+          folder: build/WebGL/${{ env.GAME_NAME }}
+          target-folder: ${{ github.sha }}
+
+      - name: Configure R2 credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          aws-region: auto
+      
+      - name: Upload to Cloudflare R2
+        run: zip -r - * | aws s3 cp - s3://unitybuiltest/${{ env.GAME_NAME }}-${{ matrix.targetPlatform }}-${{ github.sha }}.zip
+        working-directory: ./build/${{ env.GAME_NAME }}
+        
+      - name: Upload to Cloudflare R2 (WebGL)
+        run: zip -r - * | aws s3 cp - s3://unitybuiltest/${{ env.GAME_NAME }}-${{ matrix.targetPlatform }}-${{ github.sha }}.zip
+        working-directory: ./build/WebGL/${{ env.GAME_NAME }}
