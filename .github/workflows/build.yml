@@ -55,9 +55,9 @@ jobs:
           target-folder: ${{ github.sha }}
       
       - name: Upload to Cloudflare R2
-        run: zip -r - * | aws s3 cp - s3://unitybuiltest/${{ env.GAME_NAME }}-${{ matrix.targetPlatform }}-${{ github.sha }}.zip
+        run: zip -r - * | aws s3 cp - s3://unitybuiltest/${{ env.GAME_NAME }}-${{ matrix.targetPlatform }}-${{ github.sha }}.zip --endpoint-url https://{{ secret.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
         working-directory: build/${{ matrix.targetPlatform }}
         
       - name: Upload to Cloudflare R2 (WebGL)
-        run: zip -r - * | aws s3 cp - s3://unitybuiltest/${{ env.GAME_NAME }}-${{ matrix.targetPlatform }}-${{ github.sha }}.zip
+        run: zip -r - * | aws s3 cp - s3://unitybuiltest/${{ env.GAME_NAME }}-${{ matrix.targetPlatform }}-${{ github.sha }}.zip --endpoint-url https://{{ secret.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
         working-directory: build/WebGL/${{ env.GAME_NAME }}
