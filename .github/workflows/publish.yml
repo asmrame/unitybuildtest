@@ -1,8 +1,15 @@
 name: Publish to itch.io
 
-on: workflow_dispatch
+on:
+  workflow_dispatch: 
+    inputs: 
+      version:
+        description: 'Version for itch.io (does nothing for now)'
+        required: false
+        type: string
+
 env:
-  FILE_NAME: UnityBuildTest
+  FILE_NAME: 'UnityBuildTest'
   ITCH_USER: 'iofractorg'
   ITCH_GAME: 'unitybuildtest'
   BUTLER_API_KEY: ${{ secrets.BUTLER_CREDENTIALS }}
